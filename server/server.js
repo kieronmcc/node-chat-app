@@ -28,6 +28,21 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New client connected');
 
+  socket.emit('newMessage', {
+    from: 'mike@example.com',
+    text: 'Hello to you',
+    createdAt: Date()
+  });
+
+  socket.on('createMessage', (message) => {
+    var newMessage = {
+      to: message.to,
+      text: message.text,
+      createdAt: Date()
+    };
+    console.log('createMessage', newMessage);
+  });
+
   socket.on('disconnect', () => {
     console.log('Client has disconnected');
   });
