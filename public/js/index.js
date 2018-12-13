@@ -51,9 +51,11 @@ locationButton.on('click', function () {
   //From browser library - geolocation support
   //See https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API
   navigator.geolocation.getCurrentPosition(function (position) {
+    lat = position.coords.latitude;
+    lng = position.coords.longitude;
     socket.emit('createLocationMessage', {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude
+      latitude: lat,
+      longitude: lng
     });
   }, function () {
     alert('Unable to fetch location.');
