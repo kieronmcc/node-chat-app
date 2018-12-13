@@ -36,14 +36,15 @@ io.on('connection', (socket) => {
   // Sends message all sockets except one that just connected
   socket.broadcast.emit('newMessage', generateMessage( 'Admin', 'New user joined'));
 
-  socket.on('createMessage', (message) => {
+  socket.on('createMessage', (message, callback) => {
     var newMessage = {
       to: message.to,
       text: message.text,
       createdAt: Date()
     };
-    console.log('createMessage', newMessage);
     io.emit('newMessage', generateMessage(message.from, message.text));
+    callback('This is from the server');
+    console.log('Message received', message);
     // socket.broadcast.emit('newMessage', {
     //   from: message.from,
     //   text: message.text,
