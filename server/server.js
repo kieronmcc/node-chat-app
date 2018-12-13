@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
       createdAt: Date()
     };
     io.emit('newMessage', generateMessage(message.from, message.text));
-    callback('This is from the server');
+    callback();
     console.log('Message received', message);
   });
 
