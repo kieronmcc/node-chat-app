@@ -3,6 +3,8 @@ const express = require('express');
 const socketIO = require('socket.io');
 const http = require('http');
 
+const {generateMessage} = require('./utils/message');
+
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 
@@ -28,18 +30,11 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New client connected');
 
-  socket.emit( 'newMessage', {
-    from: 'Admin',
-    text: 'Welcome to the chat app',
-    createdAt: new Date().getTime()
-  });
+  // Sends message to wb socket that just connected
+  socket.emit( 'newMessage', generateMessage( 'Admin', 'Welcome to the chat app'));
 
-  socket.broadcast.emit('newMessage', {
-    from: 'Admin',
-    text: 'New user joined',
-    createdAt: new Date().getTime()
-  });
-
+  // Sends message all sockets except one that just connected
+  socket.broadcast.emit('newMessage', generateMessage( 'Admin', 'New user joined'));
 
   socket.on('createMessage', (message) => {
     var newMessage = {
@@ -48,11 +43,7 @@ io.on('connection', (socket) => {
       createdAt: Date()
     };
     console.log('createMessage', newMessage);
-    io.emit('newMessage', {
-      from: message.from,
-      text: message.text,
-      createdAt: new Date().getTime()
-    });
+    io.emit('newMessage', generateMessage(message.from, message.text));
     // socket.broadcast.emit('newMessage', {
     //   from: message.from,
     //   text: message.text,
