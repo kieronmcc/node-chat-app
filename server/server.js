@@ -27,6 +27,7 @@ var io = socketIO(server);
 app.use(express.static(publicPath));
 
 // Register an event listener on socket io object
+// each sock is a new client connection endpoint
 io.on('connection', (socket) => {
   console.log('New client connected');
 

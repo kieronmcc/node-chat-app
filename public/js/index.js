@@ -1,5 +1,25 @@
 var socket = io();
 
+function scrollToBottom () {
+  // Selectors
+  var messages = jQuery('#messages');
+  var newMessage = messages.children('li:last-child');
+
+  // Heights
+  var clientHeight = messages.prop('clientHeight'); //alt jQuery mechanism
+  var scrollTop = messages.prop('scrollTop');
+  var scrollHeight = messages.prop('scrollHeight');
+  var newMessageHeight = newMessage.innerHeight();
+  var lastMessageHeight = newMessage.prev().innerHeight();
+
+  if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+    //sets the scrollheight (above last message) to the scrollHeight which is
+    // the total height of the form container
+    messages.scrollTop(scrollHeight);
+  }
+
+};
+
 socket.on('connect', function () {
   console.log('Connected to server');
 
@@ -19,7 +39,7 @@ socket.on('newMessage', function (msg) {
   });
 
   jQuery('#messages').append(html);
-
+  scrollToBottom();
 });
 
 socket.on('newLocationMessage', function (msg) {
@@ -33,6 +53,7 @@ socket.on('newLocationMessage', function (msg) {
   });
 
   jQuery('#messages').append(html);
+  scrollToBottom();
 
   // Code below is using jQuery without a templating engine
   // var li = jQuery('<li></li>'); //Render list
@@ -49,7 +70,7 @@ socket.on('newLocationMessage', function (msg) {
 });
 
 jQuery('#message-form').on('submit', function (event) {
-  event.preventDefault();
+  event.preventDefault(); // stops form reloading
 
 var messageTextbox = jQuery('[name=message]');
   socket.emit('createMessage', {
