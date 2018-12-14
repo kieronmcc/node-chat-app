@@ -11,26 +11,41 @@ socket.on('disconnect', function () {
 
 socket.on('newMessage', function (msg) {
   var formattedTime = moment(msg.createdAt).format('h:mm a');
-  console.log('New Message', msg);
+  var template = jQuery('#message-template').html(); // returns the template markup inside message_template
+  var html = Mustache.render(template, {
+    text: msg.text,
+    from: msg.from,
+    createdAt: formattedTime
+  });
 
-  var li = jQuery('<li></li>');
-  li.text(`${msg.from}: ${formattedTime}: ${msg.text}`);
-  jQuery('#messages').append(li);
+  jQuery('#messages').append(html);
+
 });
 
-socket.on('newLocationMessage', function (message) {
-  var formattedTime = moment(message.createdAt).format('h:mm a');
-  var li = jQuery('<li></li>'); //Render list
-  //render anchor tag 'target=_blank' open link in new tab
-  var a = jQuery('<a target="_blank">My current location</a>');
+socket.on('newLocationMessage', function (msg) {
+  var formattedTime = moment(msg.createdAt).format('h:mm a');
+  // Using Mustache templating engine
+  var template = jQuery('#location-message-template').html();
+  var html = Mustache.render(template, {
+    url: msg.url,
+    from: msg.from,
+    createdAt: formattedTime
+  });
 
-  // safer this way than via template string as stops malicious User
-  // from injecting html
-  li.text(`${message.from}: ${formattedTime}: `);
-  a.attr('href', message.url);
+  jQuery('#messages').append(html);
 
-  li.append(a); // url anchor to list
-  jQuery('#messages').append(li); // add updated list to HTML DOM
+  // Code below is using jQuery without a templating engine
+  // var li = jQuery('<li></li>'); //Render list
+  // //render anchor tag 'target=_blank' open link in new tab
+  // var a = jQuery('<a target="_blank">My current location</a>');
+  //
+  // // safer this way than via template string as stops malicious User
+  // // from injecting html
+  // li.text(`${message.from}: ${formattedTime}: `);
+  // a.attr('href', message.url);
+  //
+  // li.append(a); // url anchor to list
+  // jQuery('#messages').append(li); // add updated list to HTML DOM
 });
 
 jQuery('#message-form').on('submit', function (event) {
