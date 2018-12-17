@@ -21,17 +21,15 @@ describe('isRealString Function Testsuite', () => {
     expect(res).toBeTruthy();
   });
 
-  it('should allow string with non-space characters', () => {
+  it('should allow string with internal space characters', () => {
     var validStr = "My Chat Room";
     var res = isRealString(validStr);
     expect(res).toBeTruthy();
   });
 
-  it('should allow string with non-space characters', () => {
+  it('should allow string with leading and trailling space characters', () => {
     var validStr = " My Chat Room  ";
     var res = isRealString(validStr);
     expect(res).toBeTruthy();
   });
-
-
 });
