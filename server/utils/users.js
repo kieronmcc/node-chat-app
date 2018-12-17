@@ -1,9 +1,3 @@
-[{
-  id: 'jhdjhd',
-  name: '',
-  room: ''
-}]
-
 // Using ES6 classes
 // addUser(id, name, room)
 //removeUser(id)
@@ -32,7 +26,13 @@ class Users {
   }
 
   addUser (id, name , room) {
+    var newUser = this.users.filter((user) => user.name === name)[0];
+    console.log(newUser);
+    if (newUser) {
+      return undefined;
+    }
     var user = {id, name, room};
+    user.room = user.room.toLowerCase();
     this.users.push(user);
     return user;
   }

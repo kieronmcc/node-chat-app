@@ -6,6 +6,7 @@ const http = require('http');
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
 const {Users} = require('./utils/users');
+const {Rooms} = require('./utils/rooms');
 
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
@@ -24,10 +25,14 @@ var server = http.createServer(app);
 //make our server a web socket event handler
 var io = socketIO(server);
 var users = new Users();
+var rooms = new Rooms();
 
 
 // Setup static page middleware to serve public folder
 app.use(express.static(publicPath));
+
+
+
 
 // Register an event listener on socket io object
 // each socket is a new client connection endpoint
@@ -39,26 +44,35 @@ io.on('connection', (socket) => {
       return callback('Name and Room Name are required.');
     }
 
+    var roomName = params.room.toLowerCase();
+
     //socket.leave() - this inverse
 
     // io.emit -> io.to(''room name).emit - everyone on that channel
     // socket.broadcast.emit -> socket.broadcast.to('room').emit - everyone but user on that channel
     // socket.emit - to that user only
+        var userRoom = rooms.checkRoom(roomName);
 
-    socket.join(params.room);
+    // console.log('Room', userRoom);
+    // console.log('Rooms list', rooms)
+
     users.removeUser(socket.id); // So duplicate user not allowed
-    users.addUser(socket.id, params.name, params.room);
-    io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+    var user = users.addUser(socket.id, params.name, roomName);
+    if (!user) {
+      return callback(`A user with the name ${params.name} already exists!`);
+    }
+
+    socket.join(user.room);
+    io.to(user.room).emit('updateUserList', users.getUserList(user.room));
 
     // Sends message to wb socket that just connected
     socket.emit( 'newMessage', generateMessage( 'Admin', 'Welcome to the chat app'));
 
     // Sends message all sockets except one that just connected
-    socket.broadcast.to(params.room).emit('newMessage', generateMessage( 'Admin', `${params.name} has joined.`));
+    socket.broadcast.to(user.room).emit('newMessage', generateMessage( 'Admin', `${params.name} has joined.`));
 
     callback();
   });
-
 
 
   socket.on('createMessage', (message, callback) => {
@@ -67,10 +81,7 @@ io.on('connection', (socket) => {
     if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
     }
-
-
     callback();
-
   });
 
   socket.on('createLocationMessage', (coords) => {
@@ -78,7 +89,6 @@ io.on('connection', (socket) => {
     if (user) {
       io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
     }
-
   });
 
   socket.on('disconnect', () => {
@@ -90,6 +100,13 @@ io.on('connection', (socket) => {
       io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
     }
   });
+
+  socket.on('getRoomsList', (callback) => {
+    var roomsList = rooms.getRoomsList();
+    console.log('Roomsl list: ', roomsList)
+    callback(roomsList);
+  });
+
 });
 
 // so we use the http server instead of app to listen

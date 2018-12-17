@@ -34,9 +34,12 @@ describe('Users class Testsuite', () => {
       name: 'Kieron',
       room: 'United Fans'
     };
+    var roomCheck = user.room.toLowerCase();
     var res = users.addUser(user.id, user.name, user.room);
 
-    expect(users.users).toEqual([user]);
+    expect(res.id).toEqual(user.id);
+    expect(res.name).toEqual(user.name);
+    expect(res.room).toBe(roomCheck);
   });
 
   // should remove a user by id
